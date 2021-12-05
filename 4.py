@@ -3,7 +3,7 @@ import numpy as np
 
 GRID_LEN = 5
 
-fin = open('4.txt')
+fin = open('40.txt')
 nums = list(map(int, next(fin).split(',')))
 boards = []
 for newln in fin:
@@ -12,30 +12,28 @@ for newln in fin:
 
 # print(boards, boards[0].shape)
 
-def isWinner(board, drawn: set):
-  for row in chain(board, board.transpose()):
-    unmarked = [n for n in row if n not in drawn]
-    if not unmarked:
-      return True
-  return None
+def isWinner(board, drawn: dict):
+  # isin = np.isin(board, list(drawn))
+  # return np.any(np.all(isin, axis = 0)) or np.any(np.all(isin, axis = 1))
+  return any(all(n in drawn for n in row) \
+    for row in chain(board, board.transpose()))
 
-def playUntilFirstWins(boards, nums, checkedNums = 0):
-  drawn = set()
-  for i in range(0, len(nums)):
-    drawn.add(nums[i])
+def playUntilFirstWins(boards, nums, drawn = dict()):
+  lastDrawnIdx = max(0, len(drawn) - 1)
+  for i in range(lastDrawnIdx, len(nums)):
+    drawn[nums[i]] = True
     for b, board in enumerate(boards):
       if isWinner(board, drawn):
         return (b, drawn)
 
 def playUntilLastWins(boards, nums):
-  drawn = []
+  drawn = dict()
   while True:
-    b, drawn = playUntilFirstWins(boards, nums, len(drawn))
+    b, drawn = playUntilFirstWins(boards, nums, drawn)
     if (len(boards) == 1):
       return (b, drawn)
-    print(len(drawn))
     boards.pop(b) # remove winning board
-    print(len(boards))
+    # print(len(boards), len(drawn))
 
 def sumUnmarked(board, drawn):
   # return sum(sum(n for n in row if n not in drawn) for row in board)
@@ -46,7 +44,7 @@ def sumUnmarked(board, drawn):
   return s
 
 def getScore(boards, b, drawn):
-  return drawn[-1] * sumUnmarked(boards[b], drawn)
+  return list(drawn)[-1] * sumUnmarked(boards[b], drawn)
   
 print(getScore(boards, *playUntilFirstWins(boards, nums)))
-print(getScore(boards, *playUntilLastWins(boards, nums)))
+# print(getScore(boards, *playUntilLastWins(boards, nums)))
