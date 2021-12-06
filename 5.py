@@ -28,7 +28,7 @@ for segm in segments:
     for x, y in zip(range(p1.x, p2.x+1), range(p1.y, p2.y+slope, slope)):
       B[x,y] += 1  
 
-print(B)
+# print(B)
 print((B > 1).sum())
 
 
