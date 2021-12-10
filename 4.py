@@ -1,16 +1,13 @@
 from itertools import islice, chain
 import numpy as np
 
-GRID_LEN = 5
+GRID = 5
 
 fin = open('40.txt')
 nums = list(map(int, next(fin).split(',')))
-boards = []
-for newln in fin:
-  assert newln == '\n'
-  boards.append(np.array([[int(n) for n in l.split()] for l in islice(fin, GRID_LEN)]))
-
-# print(boards, boards[0].shape)
+boards = [np.array([list(map(int, l.split())) \
+  for l in islice(fin, GRID)], dtype=np.int8) \
+  for _newln in fin]
 
 def isWinner(board, drawn: dict):
   # isin = np.isin(board, list(drawn))
@@ -27,24 +24,15 @@ def playUntilFirstWins(boards, nums, drawn = dict()):
         return (b, drawn)
 
 def playUntilLastWins(boards, nums):
-  drawn = dict()
-  while True:
-    b, drawn = playUntilFirstWins(boards, nums, drawn)
-    if (len(boards) == 1):
-      return (b, drawn)
+  b, drawn = playUntilFirstWins(boards, nums)
+  while len(boards) != 1:
     boards.pop(b) # remove winning board
-    # print(len(boards), len(drawn))
-
-def sumUnmarked(board, drawn):
-  # return sum(sum(n for n in row if n not in drawn) for row in board)
-  s = 0
-  for row in board:
-    unmarked = [n for n in row if n not in drawn]
-    s += sum(unmarked)
-  return s
+    b, drawn = playUntilFirstWins(boards, nums, drawn)
+  return (b, drawn)
 
 def getScore(boards, b, drawn):
-  return list(drawn)[-1] * sumUnmarked(boards[b], drawn)
+  sumUnmarked = sum(n for row in boards[b] for n in row if n not in drawn)
+  return list(drawn)[-1] * sumUnmarked
   
 print(getScore(boards, *playUntilFirstWins(boards, nums)))
-# print(getScore(boards, *playUntilLastWins(boards, nums)))
+print(getScore(boards, *playUntilLastWins(boards, nums)))

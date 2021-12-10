@@ -1,4 +1,5 @@
 from timeit import default_timer as timer
+import numpy as np
 
 for i in range(1, 1 + 25):
   print(f"========= Day {i} ==========")
