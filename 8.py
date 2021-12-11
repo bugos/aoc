@@ -1,41 +1,71 @@
-from functools import reduce
-from operator import mul
+from collections import namedtuple
 
-nums = [[int(c) for c in l.strip()] for l in open('8.txt')]
-assert(all(len(l) == len(nums[0]) for l in nums))
-N, M = len(nums), len(nums[0])
+Reading = namedtuple('Reading', ['patterns', 'outVals'])
 
-def adjacent(i, j):
-  return {(i+k, j+l)
-    for k in range(-1, 2)
-    for l in range(-1, 2)
-    if k != l and not (k and l)
-    if i+k in range(N) and j+l in range(M)
-  }
+parseReading = lambda s: list(map(lambda s: ''.join(sorted(s.strip())), s.split()))
+readings = [Reading(*map(parseReading, l.split('|'))) for l in open('80.txt')]
 
-def isLower(i, j, k, l): return nums[i][j] < nums[k][l]
-def is9(i, j): return nums[i][j] == 9
-
-lowPoints = [(i, j)
-  for i in range(N) 
-  for j in range(M) 
-  if all(isLower(i, j, *adj) 
-    for adj in adjacent(i, j))]
-print(sum(nums[i][j]+1 for i, j in lowPoints))
+# part 1
+print(sum(len(outVal) in [2, 4, 3, 7] for _, outVals in readings for outVal in outVals))
 
 # part 2
-def getBasinSize(point, basinPoints): # ret size
-  assert(point not in basinPoints)
-  basinPoints |= {point}
-  return 1 + sum(getBasinSize(adj, basinPoints)
-  for adj in adjacent(*point)
-    if isLower(*point, *adj)
-    and not adj in basinPoints
-    and not is9(*adj))
+# TODO: We can look only on known digits [2, 4, 3, 7]
+letters = {*map(chr, range(ord('a'), ord('g')+1))}
+digits = {*range(10)}
+digitLetters = {
+  0 : letters - {'d'},
+  1 : {'c', 'f'},
+  2:  letters - set('bf'),
+  3:  letters - set('be'),
+  4:  letters - set('aeg'),
+  5:  letters - set('ce'),
+  6:  letters - set('c'),
+  7 : {'a', 'c', 'f'},
+  8 : letters,
+  9 : letters - set('e'),
+}
 
-basinSizes = [getBasinSize(p, set()) for p in lowPoints]
-print(reduce(mul, sorted(basinSizes, reverse=True)[:3]))
+def getLetterBij(PATTERNS):
+  lenMatch = lambda replDigitS: lambda d: len(digitLetters[d]) == len(replDigitS)
+  digitBijection = {
+    replaced : {*filter(lenMatch(PATTERNS[replaced]), digits)}
+    for replaced in digits
+  }
+
+  # check letters must exist/not exist in at least one of the bijected digits
+  letterBij = lambda replLettter: lambda letter: \
+    all(any((letter in letters) == (replLettter in PATTERNS[replD]) \
+      for replD, orig in digitBijection.items() if digitWithLetter in orig) \
+    for digitWithLetter, letters in digitLetters.items())
+  letterBijection = {
+    replaced : {*filter(letterBij(replaced), letters)}
+    for replaced in letters
+  }
+
+  # remove letters that are already determined
+  for _ in range(1): # 1 happens to be enough
+    determOrigLetters = {next(iter(orig)) for repl, orig in letterBijection.items() if len(orig) == 1}
+    for repl, orig in letterBijection.items():
+      if len(orig) != 1:
+        orig -= determOrigLetters
+  
+  # print(sum(len(orig) for repl, orig in letterBijection.items()))
+  return letterBijection
 
 
-    
+def decryptWord(letterBijection, word):
+  decr = {next(iter(letterBijection[l])) for l in word}
+  return next(digit for digit, letters in digitLetters.items() if decr == letters)
 
+s = 0
+for patterns, outVals in readings: # TODO
+  letterBijection = getLetterBij(patterns)
+
+  for i, outVal in enumerate(outVals):
+    digit = decryptWord(letterBijection, outVal)
+    s += digit * (10 ** (3-i))
+    # print(i, digit, s)
+  # print("-------")
+  # break
+
+print(s)
