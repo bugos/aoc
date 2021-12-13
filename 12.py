@@ -7,9 +7,7 @@ for l in open('12.txt'):
   adj[a].append(b)
   adj[b].append(a)
 
-# print(adj)
-
-def countPaths(pos, visited = set(), done2ndVisit = False):
+def countPaths(pos, visited = set(), done2nd = False):
   assert(adj[pos])
 
   if pos == 'end':
@@ -22,10 +20,10 @@ def countPaths(pos, visited = set(), done2ndVisit = False):
   paths_to_end = 0
   for edge in adj[pos]:
     if edge not in visited:
-      paths_to_end += countPaths(edge, visited, done2ndVisit)
-    elif not done2ndVisit and edge != 'start':
+      paths_to_end += countPaths(edge, visited, done2nd)
+    elif not done2nd and edge != 'start':
       paths_to_end += countPaths(edge, visited, True)
   return paths_to_end
 
-print(countPaths('start', done2ndVisit=True), 4775)
-print(countPaths('start', done2ndVisit=False), 152480)
+print(countPaths('start', done2nd=True), 4775)
+# print(countPaths('start', done2nd=False), 152480)
