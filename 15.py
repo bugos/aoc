@@ -2,7 +2,7 @@
 
 import heapq
 
-risk = [list(map(int, l.strip())) for l in open('15.txt')]
+risk = [list(map(int, l.strip())) for l in open('150.txt')]
 N = len(risk)
 
 def neighbours(x, y):
