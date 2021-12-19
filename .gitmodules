@@ -1,0 +1,6 @@
+[submodule "dionyziz"]
+	path = dionyziz
+	url = https://github.com/dionyziz/advent-of-code.git
+[submodule "projectpxl"]
+	path = projectpxl
+	url = https://github.com/ProjectPxl/advent-of-code.git
